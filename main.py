@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramNetworkError
 
 from config import DATABASE_PATH, load_config
 from database import Database
@@ -20,6 +21,13 @@ async def main() -> None:
     dispatcher.include_router(get_main_router())
 
     try:
+        while True:
+            try:
+                await bot.me()
+                break
+            except TelegramNetworkError:
+                logging.warning("Нет соединения с Telegram. Повтор подключения через 5 секунд. Остановить: Ctrl+C")
+                await asyncio.sleep(5)
         # запускаем получение сообщений от telegram
         await dispatcher.start_polling(bot)
     finally:
